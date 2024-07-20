@@ -1,11 +1,6 @@
-# smarthome
+Smart House Project
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
+The Smart House Project integrates embedded systems and IoT technologies to automate home environments. It leverages smart devices and sensors to monitor and control aspects like lighting, temperature, security, and energy consumption. The project aims to enhance homeowner convenience, security, and energy efficiency through seamless automation and real-time monitoring.
 A few resources to get you started if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
