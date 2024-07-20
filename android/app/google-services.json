@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "978822218238",
+    "firebase_url": "https://esp82realtime-default-rtdb.firebaseio.com",
+    "project_id": "esp82realtime",
+    "storage_bucket": "esp82realtime.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:978822218238:android:7bf9893c857e8040ef80af",
+        "android_client_info": {
+          "package_name": "com.example.smarthome"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAen9dbz09l_HnuHoAp8GksgNiuSsihQds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
