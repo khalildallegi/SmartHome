@@ -1,109 +1,96 @@
 #include <Keypad.h>
-#include <ESP32Servo.h>
+#include <LiquidCrystal_I2C.h>
 
-// Configuration for the 4x4 keypad
-const byte ROWS = 4; 
-const byte COLS = 4; 
-char keys[ROWS][COLS] = {
+#define ROWS  4
+#define COLS  4
+
+int lcdColumns = 16;
+int lcdRows = 2;
+
+LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);
+
+char keyMap[ROWS][COLS] = {
   {'1', '2', '3', 'A'},
   {'4', '5', '6', 'B'},
   {'7', '8', '9', 'C'},
   {'*', '0', '#', 'D'}
 };
 
-// Define the row and column pins for the keypad
-byte rowPins[ROWS] = {33, 25, 26, 14}; // Row pins
-byte colPins[COLS] = {27, 13, 22, 4};  // Column pins 
+uint8_t rowPins[ROWS] = {14, 27, 26, 25}; // GIOP14, GIOP27, GIOP26, GIOP25
+uint8_t colPins[COLS] = {33, 32, 18, 19}; // GIOP33, GIOP32, GIOP18, GIOP19
 
-// Create keypad instance
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+Keypad keypad = Keypad(makeKeymap(keyMap), rowPins, colPins, ROWS, COLS);
 
-// Servo configuration
-Servo myservo;  
-int servoPin = 18; // Pin for the servo
-String correctPassword = "856"; // The correct password
-String enteredPassword = ""; // To store user input
-bool servoActive = false; // Track if the servo is currently attached
+String correctPassword = "836"; // The correct password
+String enteredPassword = "";    // To store user input
 
 void setup() {
   Serial.begin(115200);
-  pinMode(19, OUTPUT);
-    pinMode(21, OUTPUT);
-    digitalWrite(19, 1);
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Enter Password:");
 }
 
 void loop() {
   char key = keypad.getKey(); // Get the pressed key
 
-  // If a key is pressed, process it
-  if (key) {
-    Serial.print("Key Pressed: "); 
-    Serial.println(key); // Print the key for debugging
-
-    // Process key presses for special actions
-    if (key == 'D') {
-      // Validate the entered password
+  if (key) { // If a key is pressed
+    if (key == 'D') { // Validate the password
+      lcd.clear();
       if (enteredPassword == correctPassword) {
-        Serial.println("Correct Password! Activating Servo...");
-digitalWrite(19, 0);
-digitalWrite(21, 1);
-
-        // Attach the servo when needed
-        myservo.setPeriodHertz(50); 
-        myservo.attach(servoPin, 500, 2400); // Attach the servo on pin 18
-        servoActive = true; // Mark servo as active
-
-        // Gradually move the servo to 90 degrees
-        for (int pos = 0; pos <= 90; pos += 1) {
-          myservo.write(pos);    // Move servo to current position
-          delay(15);             // Delay for smooth movement
-        }
-
-        // Wait at 90 degrees for 1 second
-        delay(1000); 
-
-        // Gradually return the servo to 0 degrees
-        for (int pos = 90; pos >= 0; pos -= 1) {
-          myservo.write(pos);    // Move servo back to start position
-          delay(15);             // Delay for smooth movement
-        }
-
-        // Detach the servo to stop noise and vibration
-        myservo.detach();
-        servoActive = false; // Mark servo as inactive
-
-        // 30-second delay before allowing another password entry
-        Serial.println("Waiting 30 seconds before reactivating...");
-        delay(30000); 
-digitalWrite(21, 0);
-digitalWrite(19, 1);
-        // Clear entered password after delay
-        enteredPassword = ""; 
-        Serial.println("Please enter the password again.");
+        lcd.setCursor(0, 0);
+        lcd.print("Access Granted!");
+        delay(2000);
+        lcd.clear();
+        lcd.print("Waiting 30 sec...");
+        delay(30000); // Simulate the 30-second delay
+        lcd.clear();
+        lcd.print("Enter Password:");
+        enteredPassword = ""; // Reset password
       } else {
-        Serial.println("Incorrect Password. Try again.");
-        // Clear entered password if incorrect
-        enteredPassword = ""; 
+        lcd.setCursor(0, 0);
+        lcd.print("Access Denied!");
+        delay(2000);
+        lcd.clear();
+        lcd.print("Enter Password:");
+        enteredPassword = ""; // Clear entered password
       }
-    } 
-    else if (key == 'C') {
-      // Clear the entered password
-      enteredPassword = ""; 
-      Serial.println("Password cleared.");
-    } 
-    else if (key == 'A') {
-      // Delete the last character if password has characters
+    } else if (key == 'C') { // Clear password
+      enteredPassword = "";
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Password Cleared");
+      delay(2000);
+      lcd.clear();
+      lcd.print("Enter Password:");
+    } else if (key == 'A') { // Delete last character
       if (enteredPassword.length() > 0) {
         enteredPassword.remove(enteredPassword.length() - 1);
-        Serial.print("Password after deletion: ");
-        Serial.println(enteredPassword);
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Deleted: ");
+        lcd.print(enteredPassword);
+        delay(2000);
+        lcd.clear();
+        lcd.print("Enter Password:");
       }
-    } 
-    else {
-      // Append the key to the entered password
-      enteredPassword += key;
-      Serial.print("Current Entered Password: ");
-      Serial.println(enteredPassword);
+    } else { // Append the key to the entered password
+      if (enteredPassword.length() < 16) { // Limit the length to prevent overflow
+        enteredPassword += key;
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Entered: ");
+        lcd.print(enteredPassword);
+      } else {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Max Length Reached");
+        delay(2000);
+        lcd.clear();
+        lcd.print("Enter Password:");
+      }
     }
   }
 }
+
